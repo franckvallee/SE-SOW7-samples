@@ -1,0 +1,36 @@
+/*
+ * THIS SOFTWARE AND THE DOCUMENTATION IS CREATED AND OWNED BY STIBO SYSTEMS A/S.
+ * ALL RIGHTS ARE RESERVED BY STIBO SYSTEMS. USE OF THE SOFTWARE AND DOCUMENTATION
+ * IS ONLY ALLOWED ACCORDING TO YOUR AGREEMENT WITH STIBO SYSTEMS OR AN AUTHORISED
+ * RESELLER. ANY UNAUTHORISED USE, COPYING OR REVERSE ENGINEERING WILL CONSTITUTE
+ * AN INFRINGEMENT OF COPYRIGHT. STIBO SYSTEMS MAKES NO REPRESENTATION TO THE
+ * APPROPRIATENESS OR FITNESS FOR PURPOSE.
+ */
+
+// Setup of version, dependencies, imports, names...
+
+def version = '1.0.0'
+
+dependencies {
+    implementation 'com.stibo:com.stibo.core.domain:latest.integration'
+    implementation 'com.stibo:com.stibo.framework:latest.integration'
+    implementation 'com.stibo:com.stibo.outbound.businessactionpreprocessor:latest.integration'
+}
+
+jar {
+    // uncomment following line, and rename to an appropriate value
+    def jarName = "org.frva.custom.sow7"
+    archiveVersion = version
+    archiveFileName = "${jarName}-${version}.jar"
+
+
+    // Must match the component name used when packaging the partner component with SPOT.
+    // uncomment following line, and rename to an appropriate value
+    def stiboOsgiComponentName = "org.frva.custom"
+    bnd (
+        'StiboOSGiComponent': stiboOsgiComponentName,
+        'Bundle-SymbolicName': jarName,
+        'Bundle-Name': jarName,
+        'Import-Package': 'com.stibo.*, javax.*'
+    )
+}

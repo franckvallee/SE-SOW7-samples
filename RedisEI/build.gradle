@@ -1,0 +1,69 @@
+/*
+ * THIS SOFTWARE AND THE DOCUMENTATION IS CREATED AND OWNED BY STIBO SYSTEMS A/S.
+ * ALL RIGHTS ARE RESERVED BY STIBO SYSTEMS. USE OF THE SOFTWARE AND DOCUMENTATION
+ * IS ONLY ALLOWED ACCORDING TO YOUR AGREEMENT WITH STIBO SYSTEMS OR AN AUTHORISED
+ * RESELLER. ANY UNAUTHORISED USE, COPYING OR REVERSE ENGINEERING WILL CONSTITUTE
+ * AN INFRINGEMENT OF COPYRIGHT. STIBO SYSTEMS MAKES NO REPRESENTATION TO THE
+ * APPROPRIATENESS OR FITNESS FOR PURPOSE.
+ */
+
+buildscript {
+    repositories{
+        // Must indicate here the location of com.stibo.gradle.plugin.partnerextension:1.0.0
+        flatDir{
+            dirs 'C:/LIBS/stibo/step10.2'
+        }
+        repositories {
+            mavenCentral()
+        }
+    }
+}
+
+plugins {
+    id "biz.aQute.bnd.builder" version "5.3.0"
+}
+
+
+repositories {
+    flatDir{
+        dirs 'C:/LIBS/stibo/step10.2'
+    }
+    repositories {
+        mavenCentral()
+    }
+}
+
+apply plugin: 'java'
+//apply plugin: 'eclipse'
+//apply plugin: 'idea'
+//
+//idea {
+//    module{
+//        downloadJavadoc = true
+//    }
+//}
+//
+//eclipse {
+//    classpath {
+//        downloadJavadoc = true
+//    }
+//}
+
+mkdir "resources"
+
+jar {
+    bnd (
+            // Do not export anything from the bundle
+            'Export-Package': "!*",
+            'Include-Resource': 'resources'
+    )
+}
+
+apply from :'partner.gradle'
+
+dependencies {
+    // https://mvnrepository.com/artifact/io.lettuce/lettuce-core
+    implementation group: 'io.lettuce', name: 'lettuce-core', version: '6.1.0.RC1'
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.5'
+}
