@@ -22,7 +22,7 @@ dependencies {
     implementation 'com.stibo:com.stibo.outbound.businessactionpreprocessor:latest.integration'
 
     // External dependencies
-    includeInJar 'io.lettuce:lettuce-core:6.1.0.RC1',
+    includeInJar 'org.redisson:redisson:3.16.3',
         'com.fasterxml.jackson.core:jackson-databind:2.12.5'
     configurations.implementation.extendsFrom(configurations.includeInJar)
     
@@ -43,19 +43,21 @@ jar {
     def stiboOsgiComponentName = "org.frva.custom.sow7"
     // declare as classpath all packages included in jar/lib after compilation
     def classPath = ".," +
+        "lib/byte-buddy-1.11.0.jar," +
+        "lib/cache-api-1.0.0.jar," +
         "lib/jackson-annotations-2.12.5.jar," +
         "lib/jackson-core-2.12.5.jar," +
         "lib/jackson-databind-2.12.5.jar," +
-        "lib/jackson-core-2.12.5.jar," +
-        "lib/lettuce-core-6.1.0.RC1.jar," +
-        "lib/netty-buffer-4.1.60.Final.jar," +
-        "lib/netty-codec-4.1.60.Final.jar," +
-        "lib/netty-common-4.1.60.Final.jar," +
-        "lib/netty-handler-4.1.60.Final.jar," +
-        "lib/netty-resolver-4.1.60.Final.jar," +
-        "lib/netty-transport-4.1.60.Final.jar," +
+        "lib/jackson-dataformat-yaml-2.12.5.jar," +
+        "lib/netty-buffer-4.1.68.Final.jar," +
+        "lib/netty-codec-4.1.68.Final.jar," +
+        "lib/netty-common-4.1.68.Final.jar," +
+        "lib/netty-handler-4.1.68.Final.jar," +
+        "lib/netty-resolver-4.1.68.Final.jar," +
+        "lib/netty-transport-4.1.68.Final.jar," +
         "lib/reactive-streams-1.0.3.jar," +
-        "lib/reactor-core-3.3.15.RELEASE.jar"
+        "lib/reactor-core-3.4.4.jar"
+    
     bnd (
         'StiboOSGiComponent': stiboOsgiComponentName,
         'Bundle-SymbolicName': jarName,

@@ -46,13 +46,15 @@ jar {
 }
 
 dependencies {
-    // https://mvnrepository.com/artifact/io.lettuce/lettuce-core
-    implementation group: 'io.lettuce', name: 'lettuce-core', version: '6.1.0.RC1'
+    // https://mvnrepository.com/artifact/org.redisson/redisson
+    implementation group: 'org.redisson', name: 'redisson', version: '3.16.3'
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.5'
     
-    // Junit capabilities
+    // Junit capabilities and sl4j
     testImplementation     'junit:junit:4.13'
+    testImplementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.32'
+    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.32'
 }
 
 apply from :'partner.gradle'

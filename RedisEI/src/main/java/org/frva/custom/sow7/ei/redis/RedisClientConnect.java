@@ -1,8 +1,12 @@
 package org.frva.custom.sow7.ei.redis;
 
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.sync.RedisCommands;
+import java.util.List;
+import java.util.Map;
+import org.redisson.Redisson;
+import org.redisson.api.RBucket;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
+
 
 /**
  * isolate the pure REDIS connection independently from STEP environment
@@ -12,26 +16,60 @@ public class RedisClientConnect {
     
     // Maintain REDIS connection live in memory - to be later adapted with:
     //  - an external configuration file that defines the connection string
-    //  - maintain the connection open or reopen the connection at every call...
-    private static final String REDIS_CONNECTION_STRING = "redis://FRVAWIN10:6379/";
-    private static RedisClient redisCli;
-    private static StatefulRedisConnection<String, String> redisCliConnection;
+    private static String connectionString = "redis://FRVAWIN10:6379";
+    private static RedisClientConnect instance;
+    private final RedissonClient redisCli;
     
-    public static RedisClient getClient() {
+    private RedisClientConnect() {
         // Lazy implementation of REDIS client
-        if ( redisCli == null ) {
-            redisCli = RedisClient.create(REDIS_CONNECTION_STRING);
-        }
-        return redisCli;
+        Config config = new Config();
+        config.useSingleServer().setAddress(connectionString);
+        redisCli = Redisson.create(config);
     }
     
-    // connection management with lazy initialization approach
-    public static RedisCommands<String, String> getClientSyncConnection() {
-        getClient(); // ensure lazy initialization of the client
-        if ( redisCliConnection == null || !redisCliConnection.isOpen() ) {
-            redisCliConnection = redisCli.connect();
-        }
-        return redisCliConnection.sync();
+    public static void initHost( String hostAndPort) {
+        connectionString = hostAndPort;
     }
+    
+    // Singleton with lazy initialization
+    public static RedisClientConnect  instance() {
+        if ( instance == null ) {
+            instance = new RedisClientConnect();
+        }
+        return instance;
+    }
+    
+    public String get( String key) {
+        RBucket<String> rValue = redisCli.getBucket(key);
+        return rValue.get();
+    }
+    
+    public String set( String key, String value) {
+        RBucket<String> rValue = redisCli.getBucket(key);
+        rValue.set(value);
+        return rValue.get();
+    }
+    
+    public String exists( String key) {
+        RBucket<String> rValue = redisCli.getBucket(key);
+        return rValue.get();
+    }
+
+    String hmset(String get, Map<String, String> hmKeyValues) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    List<String> hkeys(String get) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    Map<String, String> hmget(String get, String[] subKeys) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    String hdel(String get, String[] subKeys) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
     
 }

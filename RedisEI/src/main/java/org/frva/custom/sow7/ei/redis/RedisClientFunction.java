@@ -10,13 +10,12 @@ import com.stibo.framework.PluginName;
 import com.stibo.framework.PluginParameter;
 import com.stibo.framework.Required;
 import com.stibo.framework.SoftRequired;
-import io.lettuce.core.KeyValue;
-import io.lettuce.core.api.sync.RedisCommands;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.redisson.api.RedissonClient;
 
 /**
  * A business function to call REDIS
@@ -31,6 +30,8 @@ public class RedisClientFunction implements
     // Function parameters
     private String command;
     private List<String> cmdParams;
+    // Handler on the REDIS client
+    RedissonClient redisCli;
     
     @Override
     public Object getDescription() {
@@ -60,16 +61,15 @@ public class RedisClientFunction implements
     
     @Override
     public String evaluate(Context context) throws BusinessRulePluginException {
-        RedisCommands<String, String> syncCommands = RedisClientConnect.getClientSyncConnection();
         // Only the subset of used commands are implemented there:
         switch( command.toUpperCase() ) {
-            case "SET": return rSet(syncCommands);
-            case "GET": return rGet(syncCommands);
-            case "EXISTS": return rExists(syncCommands);
-            case "HMSET": return rHMSet(syncCommands);
-            case "HKEYS": return rHKeys(syncCommands);
-            case "HMGET": return rHMGet(syncCommands);
-            case "HDEL": return rHDel(syncCommands);
+            case "SET": return rSet();
+            case "GET": return rGet();
+            case "EXISTS": return rExists();
+            case "HMSET": return rHMSet();
+            case "HKEYS": return rHKeys();
+            case "HMGET": return rHMGet();
+            case "HDEL": return rHDel();
         }
         // When the command is not implemented
         throw new BusinessRulePluginException( 
@@ -77,32 +77,32 @@ public class RedisClientFunction implements
                 command, cmdParams.stream().collect(Collectors.joining())));
     }
 
-    private String rSet(RedisCommands<String, String> syncCommands) throws BusinessRulePluginException {
+    private String rSet() throws BusinessRulePluginException {
         if ( cmdParams.size() < 2 ) {
             throw new BusinessRulePluginException( 
                 String.format( "REDIS SET (%s) - parameters missing (requires at least Key and Value)", 
                 command, cmdParams.stream().collect(Collectors.joining())));
         }
-        return syncCommands.set( cmdParams.get(0), cmdParams.get(1));
+        return RedisClientConnect.instance().set( cmdParams.get(0), cmdParams.get(1));
     }
     
-    private String rGet(RedisCommands<String, String> syncCommands) throws BusinessRulePluginException {
+    private String rGet() throws BusinessRulePluginException {
         if ( cmdParams.isEmpty() ) {
             throw new BusinessRulePluginException( 
                 "REDIS GET - Key parameter is missing");
         }
-        return syncCommands.get( cmdParams.get(0));
+        return RedisClientConnect.instance().get( cmdParams.get(0));
     }
     
-    private String rExists(RedisCommands<String, String> syncCommands) throws BusinessRulePluginException {
+    private String rExists() throws BusinessRulePluginException {
         if ( cmdParams.isEmpty() ) {
             throw new BusinessRulePluginException( 
                 "REDIS EXISTS - Key parameter is missing");
         }
-        return syncCommands.exists( cmdParams.get(0)) >= 1 ? "true" : "false";
+        return RedisClientConnect.instance().exists( cmdParams.get(0));
     }
     
-    private String rHMSet(RedisCommands<String, String> syncCommands) throws BusinessRulePluginException {
+    private String rHMSet() throws BusinessRulePluginException {
         if ( cmdParams.size() < 3 ) {
             throw new BusinessRulePluginException( 
                 String.format( "REDIS HMSET (%s) - parameters missing (requires at least Key, Hashkey and Value)", 
@@ -112,15 +112,15 @@ public class RedisClientFunction implements
         for (int i = 1; i < cmdParams.size()-1; i += 2 ) {
             hmKeyValues.put(cmdParams.get(i), cmdParams.get(i+1));
         }
-        return syncCommands.hmset( cmdParams.get(0), hmKeyValues);
+        return RedisClientConnect.instance().hmset( cmdParams.get(0), hmKeyValues);
     }
     
-    private String rHKeys(RedisCommands<String, String> syncCommands) throws BusinessRulePluginException {
+    private String rHKeys() throws BusinessRulePluginException {
         if ( cmdParams.isEmpty() ) {
             throw new BusinessRulePluginException( 
                 "REDIS HKEYS - Key parameter is missing");
         }
-        List<String> keys = syncCommands.hkeys(cmdParams.get(0));
+        List<String> keys = RedisClientConnect.instance().hkeys(cmdParams.get(0));
         // Return the JSON representation of keys
         try {
             return (new ObjectMapper()).writeValueAsString(keys);
@@ -129,7 +129,7 @@ public class RedisClientFunction implements
         }
     }
     
-    private String rHMGet(RedisCommands<String, String> syncCommands) throws BusinessRulePluginException {
+    private String rHMGet() throws BusinessRulePluginException {
         if ( cmdParams.size() < 2 ) {
             throw new BusinessRulePluginException( 
                 String.format( "REDIS HMGET (%s) - parameters missing (requires at least Key and Subkey)", 
@@ -139,9 +139,7 @@ public class RedisClientFunction implements
         for ( int i = 1; i < cmdParams.size(); i++ ) {
             subKeys[i-1] = cmdParams.get(i);
         }
-        List<KeyValue<String,String>> values = syncCommands.hmget(cmdParams.get(0),subKeys);
-        Map<String,String> keyValues = values.stream()
-                .collect( Collectors.toMap( kv -> kv.getKey(), kv -> kv.getValue()));
+        Map<String,String> keyValues = RedisClientConnect.instance().hmget(cmdParams.get(0),subKeys);
         // Return the JSON representation of the map
         try {
             return (new ObjectMapper()).writeValueAsString(keyValues);
@@ -150,7 +148,7 @@ public class RedisClientFunction implements
         }
     }
     
-    private String rHDel(RedisCommands<String, String> syncCommands) throws BusinessRulePluginException {
+    private String rHDel() throws BusinessRulePluginException {
         if ( cmdParams.size() < 2 ) {
             throw new BusinessRulePluginException( 
                 String.format( "REDIS HDEL (%s) - parameters missing (requires at least Key and Subkey)", 
@@ -160,7 +158,7 @@ public class RedisClientFunction implements
         for ( int i = 1; i < cmdParams.size(); i++ ) {
             subKeys[i-1] = cmdParams.get(i);
         }
-        return syncCommands.hdel( cmdParams.get(0), subKeys) >= 1 ? "true" : "false";
+        return RedisClientConnect.instance().hdel( cmdParams.get(0), subKeys);
     }
     
 }

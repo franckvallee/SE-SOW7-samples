@@ -1,6 +1,5 @@
 
-import io.lettuce.core.api.sync.RedisCommands;
-import static org.frva.custom.sow7.ei.redis.RedisClientConnect.getClientSyncConnection;
+import org.frva.custom.sow7.ei.redis.RedisClientConnect;
 import org.junit.Test;
 
 /**
@@ -11,8 +10,8 @@ public class RedisClientTest {
     
     @Test
     public void SetAndGet() {
-        RedisCommands<String, String> conn = getClientSyncConnection();
-        System.out.println( "SET: " + conn.set("HELLO", "hello world"));
-        System.out.println( "GET: " + conn.get("HELLO"));
+        RedisClientConnect.initHost("redis://127.0.0.1:6379");
+        System.out.println( "SET: " + RedisClientConnect.instance().set("HELLO", "hello world 2"));
+        System.out.println( "GET: " + RedisClientConnect.instance().get("HELLO"));
     }
 }
