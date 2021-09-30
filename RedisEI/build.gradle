@@ -34,20 +34,6 @@ repositories {
 }
 
 apply plugin: 'java'
-//apply plugin: 'eclipse'
-//apply plugin: 'idea'
-//
-//idea {
-//    module{
-//        downloadJavadoc = true
-//    }
-//}
-//
-//eclipse {
-//    classpath {
-//        downloadJavadoc = true
-//    }
-//}
 
 mkdir "resources"
 
@@ -59,11 +45,14 @@ jar {
     )
 }
 
-apply from :'partner.gradle'
-
 dependencies {
     // https://mvnrepository.com/artifact/io.lettuce/lettuce-core
     implementation group: 'io.lettuce', name: 'lettuce-core', version: '6.1.0.RC1'
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.5'
+    
+    // Junit capabilities
+    testImplementation     'junit:junit:4.13'
 }
+
+apply from :'partner.gradle'

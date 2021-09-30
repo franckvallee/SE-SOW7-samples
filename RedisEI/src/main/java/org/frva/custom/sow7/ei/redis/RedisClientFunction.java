@@ -11,15 +11,11 @@ import com.stibo.framework.PluginParameter;
 import com.stibo.framework.Required;
 import com.stibo.framework.SoftRequired;
 import io.lettuce.core.KeyValue;
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -31,25 +27,6 @@ import java.util.stream.Collectors;
 @PluginDescription("A business function to read/write from a REDIS server")
 public class RedisClientFunction implements 
         BusinessFunctionPlugin<RedisClientFunction.Parameters, RedisClientFunction.Context, String> {
-    
-    // Maintain REDIS connection live in memory - to be later adapted with:
-    //  - an external configuration file that defines the connection string
-    //  - maintain the connection open or reopen the connection at every call...
-    private static final String REDIS_CONNECTION_STRING = "redis://FRVAWIN10:6379/";
-    private static RedisClient redisCli;
-    private static StatefulRedisConnection<String, String> redisCliConnection;
-    
-    // connection management with lazy initialization approach
-    private static RedisCommands<String, String> getClientSyncConnection() {
-        // Lazy implementation of REDIS client
-        if ( redisCli == null ) {
-            redisCli = RedisClient.create(REDIS_CONNECTION_STRING);
-        }
-        if ( redisCliConnection == null || !redisCliConnection.isOpen() ) {
-            redisCliConnection = redisCli.connect();
-        }
-        return redisCliConnection.sync();
-    }
     
     // Function parameters
     private String command;
@@ -83,7 +60,7 @@ public class RedisClientFunction implements
     
     @Override
     public String evaluate(Context context) throws BusinessRulePluginException {
-        RedisCommands<String, String> syncCommands = getClientSyncConnection();
+        RedisCommands<String, String> syncCommands = RedisClientConnect.getClientSyncConnection();
         // Only the subset of used commands are implemented there:
         switch( command.toUpperCase() ) {
             case "SET": return rSet(syncCommands);

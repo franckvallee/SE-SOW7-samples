@@ -9,28 +9,58 @@
 
 // Setup of version, dependencies, imports, names...
 
-def version = '1.0.0'
+def version = '1.0.5'
+
+configurations {
+    includeInJar
+    implementation.exclude module: 'javax.annotation.meta'
+}
 
 dependencies {
     implementation 'com.stibo:com.stibo.core.domain:latest.integration'
     implementation 'com.stibo:com.stibo.framework:latest.integration'
     implementation 'com.stibo:com.stibo.outbound.businessactionpreprocessor:latest.integration'
+
+    // External dependencies
+    includeInJar 'io.lettuce:lettuce-core:6.1.0.RC1',
+        'com.fasterxml.jackson.core:jackson-databind:2.12.5'
+    configurations.implementation.extendsFrom(configurations.includeInJar)
+    
 }
 
 jar {
+    into('lib') {
+        println "include in jar: " + configurations.includeInJar.collect{ File file -> file }
+        from configurations.includeInJar
+    }
     // uncomment following line, and rename to an appropriate value
     def jarName = "org.frva.custom.sow7"
     archiveVersion = version
     archiveFileName = "${jarName}-${version}.jar"
 
-
     // Must match the component name used when packaging the partner component with SPOT.
     // uncomment following line, and rename to an appropriate value
-    def stiboOsgiComponentName = "org.frva.custom"
+    def stiboOsgiComponentName = "org.frva.custom.sow7"
+    // declare as classpath all packages included in jar/lib after compilation
+    def classPath = ".," +
+        "lib/jackson-annotations-2.12.5.jar," +
+        "lib/jackson-core-2.12.5.jar," +
+        "lib/jackson-databind-2.12.5.jar," +
+        "lib/jackson-core-2.12.5.jar," +
+        "lib/lettuce-core-6.1.0.RC1.jar," +
+        "lib/netty-buffer-4.1.60.Final.jar," +
+        "lib/netty-codec-4.1.60.Final.jar," +
+        "lib/netty-common-4.1.60.Final.jar," +
+        "lib/netty-handler-4.1.60.Final.jar," +
+        "lib/netty-resolver-4.1.60.Final.jar," +
+        "lib/netty-transport-4.1.60.Final.jar," +
+        "lib/reactive-streams-1.0.3.jar," +
+        "lib/reactor-core-3.3.15.RELEASE.jar"
     bnd (
         'StiboOSGiComponent': stiboOsgiComponentName,
         'Bundle-SymbolicName': jarName,
         'Bundle-Name': jarName,
+        'Bundle-ClassPath': classPath,
         'Import-Package': 'com.stibo.*, javax.*'
     )
 }
