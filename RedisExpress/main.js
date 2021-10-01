@@ -4,7 +4,7 @@
 /* global process */
 
 // express setup
-const REDIS_REST_PORT = 3000;
+const REDIS_REST_PORT = 3001;
 const express = require('express');
 const router = express.Router();
 const app = express();
@@ -30,6 +30,15 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
+});
+
+// GET root (serves as ping)
+app.get('/', function(req, res) { 
+    res.send( {
+        redis: REDIS_CONNECTION_STRING,
+        ping: RedisCli.ping(),
+        restPort: REDIS_REST_PORT
+    });
 });
 
 // GET .../get/KEY 
