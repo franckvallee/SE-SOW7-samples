@@ -16,6 +16,7 @@ function getByID( esGW, eventDataID) {
         if ( error.javaException instanceof com.stibo.gateway.rest.exception.RESTGatewayStatusCodeWithBodyException ) {
             return null;
         }
+        throw error;
     }
     if ( esResponse.found === true ) {
         return esResponse._source;
