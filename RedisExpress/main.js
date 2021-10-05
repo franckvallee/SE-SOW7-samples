@@ -34,6 +34,7 @@ app.use(function(req, res, next) {
 
 // GET root (serves as ping)
 app.get('/', function(req, res) { 
+    console.log("/ (PING) " + RedisCli.ping());
     res.send( {
         redis: REDIS_CONNECTION_STRING,
         ping: RedisCli.ping(),
@@ -106,6 +107,26 @@ app.get('/hkeys/:key', function(req, res) {
     });
 });
 
+// GET .../hgetall/KEY 
+app.get('/hgetall/:key', function(req, res) {
+    RedisCli.hgetall( req.params.key, function (err, result) {
+        if (err) {
+            console.log('HGETALL ERROR: ' + err);
+            res.status(500).send(err);
+        } else {
+            if ( result ) {
+                var jsonResult = {};
+                for ( var key in result ) {
+                    jsonResult[key] = JSON.parse(result[key].replace(/\\/g,""));
+                }
+                res.send( JSON.stringify(jsonResult));
+            } else {
+                res.send("{}");
+            }
+        }    
+    });
+});
+
 // GET .../hmget/KEY/subKey 
 app.get('/hmget/:key/:subkey', function(req, res) {
     RedisCli.hmget( req.params.key, req.params.subkey, function (err, result) {
@@ -113,7 +134,11 @@ app.get('/hmget/:key/:subkey', function(req, res) {
             console.log('HMGET ERROR: ' + err);
             res.status(500).send(err);
         } else {
-            res.send(result);
+            if ( result[0] === null ) {
+                res.send("[]");
+            } else {
+                res.send(result[0].replace(/\\/g,""));
+            }
         }    
     });
 });
