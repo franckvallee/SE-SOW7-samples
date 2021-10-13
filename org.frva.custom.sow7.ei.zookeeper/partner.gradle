@@ -1,0 +1,104 @@
+/*
+ * THIS SOFTWARE AND THE DOCUMENTATION IS CREATED AND OWNED BY STIBO SYSTEMS A/S.
+ * ALL RIGHTS ARE RESERVED BY STIBO SYSTEMS. USE OF THE SOFTWARE AND DOCUMENTATION
+ * IS ONLY ALLOWED ACCORDING TO YOUR AGREEMENT WITH STIBO SYSTEMS OR AN AUTHORISED
+ * RESELLER. ANY UNAUTHORISED USE, COPYING OR REVERSE ENGINEERING WILL CONSTITUTE
+ * AN INFRINGEMENT OF COPYRIGHT. STIBO SYSTEMS MAKES NO REPRESENTATION TO THE
+ * APPROPRIATENESS OR FITNESS FOR PURPOSE.
+ */
+
+// Setup of version, dependencies, imports, names...
+
+def version = '1.1.12'
+
+configurations {
+    includeInJar
+}
+
+dependencies {
+    implementation 'com.stibo:com.stibo.core.domain:latest.integration'
+    implementation 'com.stibo:com.stibo.framework:latest.integration'
+    implementation 'com.stibo:com.stibo.outbound.businessactionpreprocessor:latest.integration'
+
+    // 3rd party software and dependencies identified in /lib
+    // https://mvnrepository.com/artifact/org.apache.zookeeper/zookeeper
+    implementation group: 'org.apache.zookeeper', name: 'zookeeper', version: '3.7.0'    
+    // https://mvnrepository.com/artifact/org.apache.zookeeper/zookeeper-jute
+    implementation group: 'org.apache.zookeeper', name: 'zookeeper-jute', version: '3.7.0'
+    // https://mvnrepository.com/artifact/org.apache.yetus/audience-annotations
+    implementation group: 'org.apache.yetus', name: 'audience-annotations', version: '0.12.0'
+    // https://mvnrepository.com/artifact/io.netty/netty-buffer
+    implementation group: 'io.netty', name: 'netty-buffer', version: '4.1.59.Final'
+    // https://mvnrepository.com/artifact/io.netty/netty-codec
+    implementation group: 'io.netty', name: 'netty-codec', version: '4.1.59.Final'
+    // https://mvnrepository.com/artifact/io.netty/netty-common
+    implementation group: 'io.netty', name: 'netty-common', version: '4.1.59.Final'
+    // https://mvnrepository.com/artifact/io.netty/netty-handler
+    implementation group: 'io.netty', name: 'netty-handler', version: '4.1.59.Final'
+    // https://mvnrepository.com/artifact/io.netty/netty-resolver
+    implementation group: 'io.netty', name: 'netty-resolver', version: '4.1.59.Final'
+    // https://mvnrepository.com/artifact/io.netty/netty-transport
+    implementation group: 'io.netty', name: 'netty-transport', version: '4.1.59.Final'
+    // https://mvnrepository.com/artifact/io.netty/netty-transport-native-epoll
+    implementation group: 'io.netty', name: 'netty-transport-native-epoll', version: '4.1.59.Final'
+    // https://mvnrepository.com/artifact/io.netty/netty-transport-native-unix-common
+    implementation group: 'io.netty', name: 'netty-transport-native-unix-common', version: '4.1.59.Final'
+    // https://mvnrepository.com/artifact/log4j/log4j
+    implementation group: 'log4j', name: 'log4j', version: '1.2.17'
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12
+    implementation group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.30'
+       
+    // External dependencies
+    includeInJar 'org.apache.zookeeper:zookeeper:3.7.0'
+    //configurations.implementation.extendsFrom(configurations.includeInJar)
+    configurations.includeInJar.extendsFrom(configurations.implementation)
+}
+
+jar {
+    into('lib') {
+        println "include in jar: " + configurations.includeInJar.collect{ File file -> file }
+        from configurations.includeInJar
+    }
+    // uncomment following line, and rename to an appropriate value
+    def jarName = "org.frva.custom.sow7"
+    archiveVersion = version
+    archiveFileName = "${jarName}-${version}.jar"
+
+    // Must match the component name used when packaging the partner component with SPOT.
+    // uncomment following line, and rename to an appropriate value
+    def stiboOsgiComponentName = "org.frva.custom.sow7"
+    
+    // declare as classpath all packages included in jar/lib after compilation
+    def classPath = "." +
+        ",lib/zookeeper-3.7.0.jar" +
+        ",lib/zookeeper-jute-3.7.0.jar"
+        ",lib/audience-annotations-0.12.0.jar" +
+        ",lib/netty-buffer-4.1.59.Final.jar" +
+        ",lib/netty-codec-4.1.59.Final.jar" +
+        ",lib/netty-common-4.1.59.Final.jar" +
+        ",lib/netty-handler-4.1.59.Final.jar" +
+        ",lib/netty-resolver-4.1.59.Final.jar" +
+        ",lib/netty-transport-4.1.59.Final.jar" +
+        ",lib/netty-native-epoll-4.1.59.Final.jar" +
+        ",lib/netty-native-unix-common-4.1.59.Final.jar" +
+        ",lib/log4j-1.2.17.jar" + // needs to be imported
+        ",lib/sl4j-api-1.7.30.jar" + // needs to import org.sl4j.LoggerFactory
+        ",lib/slf4j-log4j12-1.7.30.jar" + // implementation with log4j
+        ",lib/log4j-slf4j-impl.2.13.0.jar"
+
+    // declare as imported packages all STIBO and javax modules on need 
+    // + used 3rd party packages
+    def importPackages = "com.stibo.*" +
+        ",org.slf4j.*,org.apache.log4j.*" +
+        ",javax.net.ssl, javax.security.*"
+    
+    bnd (
+        'StiboOSGiComponent': stiboOsgiComponentName,
+        'Bundle-SymbolicName': jarName,
+        'Bundle-Name': jarName,
+        'Bundle-ClassPath': classPath,
+        'Import-Package': importPackages
+    )
+}

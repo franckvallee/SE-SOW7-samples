@@ -1,0 +1,56 @@
+/*
+ * THIS SOFTWARE AND THE DOCUMENTATION IS CREATED AND OWNED BY STIBO SYSTEMS A/S.
+ * ALL RIGHTS ARE RESERVED BY STIBO SYSTEMS. USE OF THE SOFTWARE AND DOCUMENTATION
+ * IS ONLY ALLOWED ACCORDING TO YOUR AGREEMENT WITH STIBO SYSTEMS OR AN AUTHORISED
+ * RESELLER. ANY UNAUTHORISED USE, COPYING OR REVERSE ENGINEERING WILL CONSTITUTE
+ * AN INFRINGEMENT OF COPYRIGHT. STIBO SYSTEMS MAKES NO REPRESENTATION TO THE
+ * APPROPRIATENESS OR FITNESS FOR PURPOSE.
+ */
+
+buildscript {
+    repositories{
+        // Must indicate here the location of com.stibo.gradle.plugin.partnerextension:1.0.0
+        flatDir{
+            dirs 'C:/LIBS/stibo/step10.2'
+        }
+        repositories {
+            mavenCentral()
+        }
+    }
+}
+
+plugins {
+    id "biz.aQute.bnd.builder" version "5.3.0"
+}
+
+
+repositories {
+    flatDir{
+        dirs 'C:/LIBS/stibo/step10.2'
+    }
+    repositories {
+        mavenCentral()
+    }
+}
+
+apply plugin: 'java'
+
+mkdir "resources"
+
+jar {
+    bnd (
+            // Do not export anything from the bundle
+            'Export-Package': "!*",
+            'Include-Resource': 'resources'
+    )
+}
+
+dependencies {
+    // https://mvnrepository.com/artifact/org.apache.zookeeper/zookeeper
+    implementation group: 'org.apache.zookeeper', name: 'zookeeper', version: '3.7.0'    
+    
+    // Junit capabilities
+    testImplementation     'junit:junit:4.13'
+}
+
+apply from :'partner.gradle'
